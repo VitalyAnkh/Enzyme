@@ -161,6 +161,43 @@ if (${ENZYME_EXTERNAL_SHARED_LIB})
         COMPONENT dev)
 endif()
 
+# Reactant-focused Enzyme subset as one static lib.
+if (${ENZYME_ENABLE_REACTANT})
+  set(ENZYME_REACTANT_SUPPORT_SRC
+    PreserveNVVM.cpp
+  )
+
+  add_llvm_library(EnzymeReactantSupport-${LLVM_VERSION_MAJOR}
+    ${ENZYME_REACTANT_SUPPORT_SRC}
+    PARTIAL_SOURCES_INTENDED
+    STATIC
+  )
+
+  target_compile_definitions(EnzymeReactantSupport-${LLVM_VERSION_MAJOR}
+    PRIVATE ENZYME_ENABLE_NVVM_ATTRIBUTION=0
+  )
+
+  target_include_directories(EnzymeReactantSupport-${LLVM_VERSION_MAJOR}
+    PUBLIC
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+      $<INSTALL_INTERFACE:include>
+  )
+
+  install(TARGETS EnzymeReactantSupport-${LLVM_VERSION_MAJOR}
+    EXPORT EnzymeTargets
+    ARCHIVE DESTINATION lib COMPONENT dev
+  )
+
+  # Export internal Enzyme headers like Enzyme/Utils.h and Enzyme/PreserveNVVM.h
+  install(
+    DIRECTORY "${PROJECT_SOURCE_DIR}/Enzyme/"
+    DESTINATION include/Enzyme
+    FILES_MATCHING
+      PATTERN "*.h"
+  )
+endif()
+
 if (APPLE)
 # Darwin-specific linker flags for loadable modules.
 if (ENZYME_ENABLE_PLUGINS)
